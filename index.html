@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repo-ease - Repository Update Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 100%);
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e1e3f 0%, #2a2a4a 100%);
+            border-right: 2px solid #3b3b5c;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border-bottom: 2px solid #3b82f6;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #e0e7ff;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        .channels {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 10px;
+        }
+
+        .channels::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .channels::-webkit-scrollbar-track {
+            background: #2a2a4a;
+            border-radius: 3px;
+        }
+
+        .channels::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 3px;
+        }
+
+        .channels::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+
+        .channel {
+            padding: 12px 15px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .channel:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(29, 78, 216, 0.15) 100%);
+            border-left-color: #3b82f6;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .channel.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(29, 78, 216, 0.25) 100%);
+            border-left-color: #60a5fa;
+        }
+
+        .channel-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .channel-preview {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .content-header {
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid #334155;
+            backdrop-filter: blur(10px);
+        }
+
+        .content-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .content-body {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .update-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .update-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #60a5fa;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .summary {
+            color: #e2e8f0;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .financial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .financial-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+        }
+
+        .financial-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .financial-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #10f2c5;
+        }
+
+        .legal-status {
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            cursor: help;
+            transition: all 0.3s ease;
+        }
+
+        .legal-status.legal {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+            border: 1px solid #10b981;
+        }
+
+        .legal-status.illegal {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+            border: 1px solid #ef4444;
+        }
+
+        .legal-text {
+            font-weight: 600;
+        }
+
+        .legal-status.legal .legal-text {
+            color: #34d399;
+        }
+
+        .legal-status.illegal .legal-text {
+            color: #f87171;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 1px solid #374151;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1f2937;
+        }
+
+        .legal-status:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 25px 30px;
+            border-top: 1px solid #334155;
+            text-align: center;
+        }
+
+        .footer-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #60a5fa;
+            margin-bottom: 10px;
+        }
+
+        .footer-text {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .contact {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .contact:hover {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+
+        .placeholder {
+            text-align: center;
+            padding: 60px;
+            color: #64748b;
+        }
+
+        .placeholder h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #94a3b8;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .update-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">Repo-ease</div>
+                <div class="subtitle">Dynamic Side Panel View</div>
+            </div>
+            <div class="channels" id="channelsContainer">
+                <!-- Channels will be dynamically populated -->
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <h1 class="content-title" id="contentTitle">Welcome to Repo-ease</h1>
+            </div>
+            
+            <div class="content-body" id="contentBody">
+                <div class="placeholder">
+                    <h2>Select a repository update</h2>
+                    <p>Choose a channel from the sidebar to view detailed information about repository updates.</p>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="footer-title">About Repo-ease</div>
+                <div class="footer-text">
+                    Streamlining repository management with intelligent updates and comprehensive legal compliance monitoring.
+                    <br>
+                    Contact us: <a href="mailto:contact@repo-ease.com" class="contact">contact@repo-ease.com</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for repository updates
+        const repositoryUpdates = [
+            {
+                id: 1,
+                name: "Authentication Module v2.1",
+                preview: "Enhanced security features with OAuth 2.0 implementation",
+                summary: "This update introduces advanced authentication mechanisms including OAuth 2.0, multi-factor authentication, and enhanced password policies. The module now supports integration with major identity providers and includes comprehensive audit logging for compliance requirements.",
+                investment: "$45,000",
+                expectedGrowth: "23%",
+                isLegal: true,
+                legalReason: "Fully compliant with GDPR and CCPA regulations"
+            },
+            {
+                id: 2,
+                name: "Database Optimization Engine",
+                preview: "Performance improvements and query optimization",
+                summary: "Revolutionary database optimization engine that automatically analyzes query patterns and suggests improvements. Features include intelligent indexing, query caching, and real-time performance monitoring with detailed analytics dashboard.",
+                investment: "$78,000",
+                expectedGrowth: "34%",
+                isLegal: false,
+                legalReason: "Contains proprietary algorithms that may infringe on existing patents"
+            },
+            {
+                id: 3,
+                name: "API Gateway v3.0",
+                preview: "Microservices architecture with advanced routing",
+                summary: "Next-generation API gateway supporting advanced routing, load balancing, and service discovery. Includes built-in rate limiting, authentication middleware, and comprehensive monitoring tools for microservices architecture.",
+                investment: "$62,000",
+                expectedGrowth: "28%",
+                isLegal: true,
+                legalReason: "Open source components properly licensed under MIT and Apache 2.0"
+            },
+            {
+                id: 4,
+                name: "ML Analytics Pipeline",
+                preview: "Machine learning integration for predictive analytics",
+                summary: "Sophisticated machine learning pipeline for predictive analytics and data processing. Features automated model training, real-time inference capabilities, and integration with popular ML frameworks including TensorFlow and PyTorch.",
+                investment: "$95,000",
+                expectedGrowth: "41%",
+                isLegal: true,
+                legalReason: "All ML models trained on properly licensed datasets"
+            },
+            {
+                id: 5,
+                name: "Security Audit Framework",
+                preview: "Automated security scanning and vulnerability detection",
+                summary: "Comprehensive security audit framework with automated vulnerability scanning, code analysis, and compliance checking. Includes integration with major security databases and provides detailed remediation recommendations.",
+                investment: "$58,000",
+                expectedGrowth: "19%",
+                isLegal: false,
+                legalReason: "Uses scanning techniques that may violate terms of service of third-party APIs"
+            },
+            {
+                id: 6,
+                name: "Cloud Deployment Manager",
+                preview: "Multi-cloud deployment automation and management",
+                summary: "Advanced cloud deployment manager supporting AWS, Azure, and GCP. Features include automated scaling, cost optimization, disaster recovery, and comprehensive monitoring across multiple cloud providers.",
+                investment: "$71,000",
+                expectedGrowth: "31%",
+                isLegal: true,
+                legalReason: "Compliant with all major cloud provider terms of service"
+            },
+            {
+                id: 7,
+                name: "Real-time Collaboration Suite",
+                preview: "Live editing and collaboration features",
+                summary: "Real-time collaboration suite enabling multiple developers to work simultaneously on code repositories. Features include live editing, conflict resolution, integrated chat, and version control with branch management.",
+                investment: "$89,000",
+                expectedGrowth: "37%",
+                isLegal: false,
+                legalReason: "Collaborative editing technology may conflict with existing collaboration platform patents"
+            }
+        ];
+
+        let currentUpdate = null;
+
+        function renderChannels() {
+            const channelsContainer = document.getElementById('channelsContainer');
+            channelsContainer.innerHTML = '';
+
+            repositoryUpdates.forEach(update => {
+                const channelElement = document.createElement('div');
+                channelElement.className = 'channel';
+                channelElement.innerHTML = `
+                    <div class="channel-name"># ${update.name}</div>
+                    <div class="channel-preview">${update.preview}</div>
+                `;
+                
+                channelElement.addEventListener('click', () => {
+                    selectChannel(update);
+                });
+                
+                channelsContainer.appendChild(channelElement);
+            });
+        }
+
+        function selectChannel(update) {
+            // Remove active class from all channels
+            document.querySelectorAll('.channel').forEach(ch => ch.classList.remove('active'));
+            
+            // Add active class to clicked channel
+            event.currentTarget.classList.add('active');
+            
+            currentUpdate = update;
+            renderUpdateDetails(update);
+        }
+
+        function renderUpdateDetails(update) {
+            const contentTitle = document.getElementById('contentTitle');
+            const contentBody = document.getElementById('contentBody');
+            
+            contentTitle.textContent = update.name;
+            
+            contentBody.innerHTML = `
+                <div class="update-card">
+                    <div class="section-title">Summary</div>
+                    <div class="summary">${update.summary}</div>
+                    
+                    <div class="section-title">Financial Impact</div>
+                    <div class="financial-section">
+                        <div class="financial-item">
+                            <div class="financial-label">Investment Required</div>
+                            <div class="financial-value">${update.investment}</div>
+                        </div>
+                        <div class="financial-item">
+                            <div class="financial-label">Expected Growth</div>
+                            <div class="financial-value">${update.expectedGrowth}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">Legal Compliance</div>
+                    <div class="legal-status ${update.isLegal ? 'legal' : 'illegal'}">
+                        <div class="legal-text">
+                            ${update.isLegal ? '✓ Legally Compliant' : '⚠ Legal Issues Detected'}
+                        </div>
+                        <div class="tooltip">${update.legalReason}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Simulate dynamic updates
+        function simulateNewUpdate() {
+            const newUpdateTemplates = [
+                {
+                    name: "GraphQL Federation Layer",
+                    preview: "Unified API layer for microservices",
+                    summary: "Advanced GraphQL federation layer that unifies multiple microservices into a single, coherent API. Features include schema stitching, query optimization, and real-time subscriptions with comprehensive caching mechanisms.",
+                    investment: `$${Math.floor(Math.random() * 50000) + 40000}`,
+                    expectedGrowth: `${Math.floor(Math.random() * 25) + 15}%`,
+                    isLegal: Math.random() > 0.4,
+                    legalReason: Math.random() > 0.5 ? "Compliant with GraphQL specification and open source licenses" : "Federation patterns may conflict with existing API gateway patents"
+                },
+                {
+                    name: "Blockchain Integration Module",
+                    preview: "Decentralized data verification system",
+                    summary: "Blockchain integration module for decentralized data verification and smart contract execution. Supports multiple blockchain networks including Ethereum, Polygon, and custom enterprise blockchains with gas optimization.",
+                    investment: `$${Math.floor(Math.random() * 60000) + 70000}`,
+                    expectedGrowth: `${Math.floor(Math.random() * 30) + 25}%`,
+                    isLegal: Math.random() > 0.6,
+                    legalReason: Math.random() > 0.5 ? "Blockchain technology properly implemented with regulatory compliance" : "Smart contract functionality may require additional regulatory approval"
+                }
+            ];
+
+            if (repositoryUpdates.length < 12) {
+                const template = newUpdateTemplates[Math.floor(Math.random() * newUpdateTemplates.length)];
+                const newUpdate = {
+                    id: repositoryUpdates.length + 1,
+                    ...template
+                };
+                
+                repositoryUpdates.push(newUpdate);
+                renderChannels();
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            renderChannels();
+            
+            // Simulate new updates every 10 seconds
+            setInterval(simulateNewUpdate, 10000);
+        });
+    </script>
+</body>
+</html>
